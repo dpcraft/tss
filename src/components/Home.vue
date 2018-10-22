@@ -6,44 +6,56 @@
     </el-header>
     <el-main>
       <p class="table-title">
-        论文类、配置类、编程类题目列表
+        题目列表
       </p>
       <el-table
-        :data="tableData"
+        :data="topicList"
         stripe
+        v-loading="listLoading"
         style="width: 100%; text-align: center">
         <el-table-column
           label="序号"
           align="center"
-          width="100">
-          <template slot-scope="scope">
-            {{scope.$index+1}}
-          </template>
+          prop="topicId"
+          width="80">
         </el-table-column>
         <el-table-column
           align="center"
-          prop="date"
+          prop="topicType"
+          label="类型"
+          width="180">
+        </el-table-column>
+        <el-table-column
+          align="center"
+          prop="topicName"
           label="题目"
-          width="180">
+          width="300">
         </el-table-column>
         <el-table-column
           align="center"
-          prop="name"
+          prop="topicDescription"
           label="要求"
-          width="180">
+          min-width="300">
         </el-table-column>
         <el-table-column
           align="center"
-          prop="address"
-          label="详细">
+          prop="topicMaxSelected"
+          label="限选人数"
+          width="100">
+        </el-table-column>
+        <el-table-column
+          align="center"
+          prop="topicRealSelected"
+          label="已选人数"
+          width="100">
         </el-table-column>
         <el-table-column
           align="center"
           fixed="right"
           label="操作"
-          width="300">
+          width="100">
           <template slot-scope="scope">
-            <el-button @click="handleSubscribe(scope.row)" type="primary" size="small">选择</el-button>
+            <el-button v-if="scope.row.topicType != '习题'" @click="handleSelect(scope.row)" type="primary" size="small">选择</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -58,27 +70,26 @@
         <el-table-column
           label="序号"
           align="center"
-          width="100">
-          <template slot-scope="scope">
-            {{scope.$index+1}}
-          </template>
+          prop="topicId"
+          width="80">
         </el-table-column>
         <el-table-column
           align="center"
-          prop="date"
-          label="日期"
+          prop="topicType"
+          label="类型"
           width="180">
         </el-table-column>
         <el-table-column
           align="center"
-          prop="name"
-          label="姓名"
-          width="180">
+          prop="topicName"
+          label="题目"
+          width="300">
         </el-table-column>
         <el-table-column
           align="center"
-          prop="address"
-          label="地址">
+          prop="topicDescription"
+          label="要求"
+          min-width="300">
         </el-table-column>
         <el-table-column
           align="center"
@@ -86,42 +97,8 @@
           label="操作"
           width="300">
           <template slot-scope="scope">
-            <el-button @click="handleCancel(scope.row)" type="danger" size="small">取消</el-button>
+            <el-button  @click="handleCancel(scope.row)" type="danger" size="small">取消</el-button>
           </template>
-        </el-table-column>
-      </el-table>
-
-      <p class="table-title">
-        习题类题目列表（8选4）
-      </p>
-      <el-table
-        :data="tableData"
-        stripe
-        style="width: 100%; text-align: center">
-        <el-table-column
-          label="序号"
-          align="center"
-          width="100">
-          <template slot-scope="scope">
-            {{scope.$index+1}}
-          </template>
-        </el-table-column>
-        <el-table-column
-          align="center"
-          prop="date"
-          label="题目"
-          width="180">
-        </el-table-column>
-        <el-table-column
-          align="center"
-          prop="name"
-          label="要求"
-          width="180">
-        </el-table-column>
-        <el-table-column
-          align="center"
-          prop="address"
-          label="详细">
         </el-table-column>
       </el-table>
     </el-main>
@@ -131,42 +108,52 @@
 
 <script>
   import * as types from '@/store/types'
+  import {fetchList, select, cancel} from '@/api/topic'
   export default {
     name:'Home',
     data() {
       return {
-        tableData: [{
-          date: '2016-05-02',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-04',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1517 弄'
-        }, {
-          date: '2016-05-01',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1519 弄'
-        }, {
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1516 弄'
-        }],
+        topicList: [],
         yourChoice:[],
-        username: ''
+        username: '',
+        listLoading: false
       }
     },
     created() {
       this.username = this.$store.state.username
+      this.getList()
     },
     methods:{
-      handleSubscribe(row) {
-        row.state = 0
-        this.yourChoice.push(row)
+      getList() {
+        this.listLoading = true
+        fetchList().then(response => {
+          this.topicList = response.data.list
+        })
+        this.listLoading = false
+      },
+      handleSelect(row) {
+        select(this.username,row.topicId).then(response => {
+          this.$message({
+            message: response.data,
+            type: 'success'
+          });
+          if(response.code == 200){
+            this.yourChoice.push(row)
+          }
+        })
+
       },
       handleCancel(row) {
-        row.state = 1
-        this.yourChoice.splice(0,1)
+        cancel(this.username,row.topicId).then(response => {
+          this.$message({
+            message: response.data,
+            type: 'success'
+          });
+          if(response.code == 200){
+            this.yourChoice.splice(0,1)
+          }
+        })
+
       },
       logout() {
         this.$store.commit(types.LOGOUT)

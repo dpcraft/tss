@@ -144,15 +144,22 @@
         this.$refs.loginForm.validate(valid => {
           if (valid) {
             this.loading = true
-            loginByUsername(this.loginForm.username,this.loginForm.password)
-            let data = {
-              username: this.loginForm.username,
-              token: this.loginForm.username
-            }
-            this.$store.commit(types.LOGIN, data)
-            let redirect = decodeURIComponent(this.$route.query.redirect || '/');
-            this.$router.push({
-              path: redirect
+            loginByUsername(this.loginForm.username,this.loginForm.password).then(response => {
+              alert(JSON.parse(JSON.stringify(response.code)))
+              if(response.code == 200){
+                let data = {
+                  username: this.loginForm.username,
+                  token: this.loginForm.username
+                }
+                this.$store.commit(types.LOGIN, data)
+                let redirect = decodeURIComponent(this.$route.query.redirect || '/');
+                this.$router.push({
+                  path: redirect
+                })
+              }else if(response.code == 300) {
+                alert('请修改密码')
+              }
+
             })
               this.loading = false
           } else {
