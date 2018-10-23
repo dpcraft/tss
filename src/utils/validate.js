@@ -3,7 +3,7 @@
  */
 
 export function isvalidUsername(str) {
-  const reg = /^201[6|7|8][0-9]{8}$/; //验证规则
+  const reg = /^201[5|6|7|8][0-9]{8,9}$/; //验证规则
   return reg.test(str); //true
 }
 

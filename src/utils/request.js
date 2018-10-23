@@ -6,16 +6,17 @@ import router from '@/router'
 
 // create an axios instance
 const service = axios.create({
-  baseURL: 'http://47.106.241.21/tss', // api 的 base_url
+  baseURL: 'http://192.168.3.147:8080', // api 的 base_url
+  // baseURL: 'http://47.106.241.21/tss', // api 的 base_url
   timeout: 5000 // request timeout
 })
 
 // http request 拦截器
 service.interceptors.request.use(
   config => {
-    if (store.state.token) {
-      config.headers.Authorization = `token ${store.state.token}`
-    }
+    // if (store.state.token) {
+    //   config.headers.Authorization = `token ${store.state.token}`
+    // }
     return config
   },
   err => {

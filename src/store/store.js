@@ -13,13 +13,18 @@ export default new Vuex.Store({
         [types.LOGIN]: (state, data) => {
             localStorage.token = data.token;
             localStorage.username= data.username;
+            localStorage.classNo= data.classNo;
             state.token = data.token;
             state.username = data.username;
+            state.classNo = data.classNo;
         },
         [types.LOGOUT]: (state) => {
             localStorage.removeItem('token')
             localStorage.removeItem('username')
+            localStorage.removeItem('classNo')
             state.username = ''
+            state.token = ''
+            state.classNo = ''
         },
         [types.TITLE]: (state, data) => {
             state.title = data;

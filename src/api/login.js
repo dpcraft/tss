@@ -8,7 +8,7 @@ export function loginByUsername(username, password) {
   return request({
     url: '/student/login',
     method: 'get',
-    params:data
+    params: data
   })
 }
 

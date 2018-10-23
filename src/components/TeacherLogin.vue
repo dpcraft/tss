@@ -1,18 +1,11 @@
 <template>
   <div class="login-container">
-    <div class="title">通信网络系统基础选题</div>
+    <div class="title">通信网络系统基础选题(教师端)</div>
     <el-row type="flex" class="row-bg">
       <el-col :span="8"></el-col>
       <el-col :span="6">
         <el-form  class="login-form" ref="loginForm" :model="loginForm" label-width="80px" :rules="loginRules" >
-        <el-form-item label="班级" prop="classNo">
-          <el-select v-model="loginForm.classNo" placeholder="请选择上课班级">
-            <el-option label="一班" value="1"></el-option>
-            <el-option label="二班" value="2"></el-option>
-            <el-option label="三班" value="3"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="学号" prop="username">
+        <el-form-item label="工号" prop="username">
           <el-input v-model="loginForm.username"
                     type="text"
                     auto-complete="on"/>
@@ -41,7 +34,7 @@
 
     <el-dialog title="修改密码" :visible.sync="dialogFormVisible" width="40%">
       <el-form :model="changePwdForm" :rules="changePwdRules" ref="changePwdForm">
-        <el-form-item label="学号" :label-width="formLabelWidth" prop="username">
+        <el-form-item label="工号" :label-width="formLabelWidth" prop="username">
           <el-input v-model="changePwdForm.username" autocomplete="off" type="text"></el-input>
         </el-form-item>
         <el-form-item label="原密码" :label-width="formLabelWidth"prop="oldPwd">
@@ -72,7 +65,7 @@
     data() {
       const validateUsername = (rule, value, callback) => {
         if (!isvalidUsername(value)) {
-          callback(new Error('请输入正确的学号'))
+          callback(new Error('请输入正确的工号'))
         } else {
           callback()
         }
@@ -95,7 +88,6 @@
         loginRules: {
           username: [{ required: true, trigger: 'blur', validator: validateUsername }],
           password: [{ required: true, trigger: 'blur', message: '密码不能为空' }],
-          classNo:[{required:true, trigger: 'blur', message: '请选择班级'}]
         },
         changePwdRules: {
           username: [{ required: true, trigger: 'blur', validator: validateUsername }],
@@ -157,7 +149,7 @@
                   path: redirect
                 })
               }else if(response.data.code == 400) {
-                this.$alert('学号或密码不正确', '登录失败', {
+                this.$alert('工号或密码不正确', '登录失败', {
                   confirmButtonText: '确定',
                 });
               }
