@@ -63,7 +63,8 @@
           label="操作"
           width="100">
           <template slot-scope="scope">
-            <el-button v-if="scope.row.topicType != '习题'" @click="handleSelect(scope.row)" type="primary" size="small">选择</el-button>
+            <el-button :loading="selectLoading" v-if="scope.row.topicType != '习题' " type="primary"
+                       @click="handleSelect(scope.row)"  size="small">选择</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -73,6 +74,7 @@
       </p>
       <el-table
         :data="yourChoice"
+        v-loading="listLoading2"
         stripe
         style="width: 100%; text-align: center">
         <el-table-column
@@ -116,7 +118,7 @@
 
 <script>
   import * as types from '@/store/types'
-  import {fetchList, select, cancel} from '@/api/topic'
+  import {fetchList, select, cancel, fetchList2} from '@/api/topic'
   export default {
     name:'Home',
     data() {
@@ -125,6 +127,8 @@
         yourChoice:[],
         username: '',
         listLoading: false,
+        listLoading2: false,
+        selectLoading: false,
         classNo:'',
         options: [{
           value: '1',
@@ -143,8 +147,13 @@
       this.username = this.$store.state.username
       this.classNo = this.$store.state.classNo
       this.getList()
+      this.getyourChoiceList()
     },
     methods:{
+      myRefresh() {
+        this.getList()
+        this.getyourChoiceList(this.username)
+      },
       getList() {
         this.listLoading = true
         fetchList().then(response => {
@@ -152,26 +161,52 @@
         })
         this.listLoading = false
       },
+      getyourChoiceList() {
+        this.listLoading2 = true
+        fetchList2(this.username).then(response => {
+          this.yourChoice = response.data.list
+        })
+        this.listLoading2 = false
+      },
       handleSelect(row) {
+        this.selectLoading = true
         select(this.username,row.topicId).then(response => {
-          this.$message({
-            message: response.data,
-            type: 'success'
-          });
-          if(response.code == 200){
-            this.yourChoice.push(row)
+
+          if(response.data.code == 200){
+            this.$message({
+              message: '选题成功',
+              type: 'success'
+            });
+            this.myRefresh()
+          }else if(response.data.code == 401) {
+            this.$message({
+              message: '不能重复选择',
+              type: 'error'
+            });
+          }else if(response.data.code == 402) {
+            this.$message({
+              message: '此题已选满',
+              type: 'error'
+            });
           }
         })
+        this.selectLoading = false
 
       },
       handleCancel(row) {
         cancel(this.username,row.topicId).then(response => {
-          this.$message({
-            message: response.data,
-            type: 'success'
-          });
-          if(response.code == 200){
-            this.yourChoice.splice(0,1)
+
+          if(response.data.code == 200){
+            this.$message({
+              message: '取消成功',
+              type: 'success'
+            });
+            this.myRefresh()
+          }else {
+            this.$message({
+              message: '取消失败',
+              type: 'error'
+            });
           }
         })
 
@@ -193,6 +228,13 @@
           classNo: this.classNo
         }
         this.$store.commit(types.LOGIN, data)
+      },
+      getType() {
+        if(this.yourChoice.length == 0) {
+          return 'primary'
+        }else {
+          return 'info'
+        }
       }
     }
   }

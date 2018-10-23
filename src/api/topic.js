@@ -9,6 +9,16 @@ export function fetchList() {
     method: 'get',
   })
 }
+export function fetchList2(username) {
+  const data = {
+    studentId:username
+  }
+  return request({
+    url: 'topic/show/selectedtopic',
+    method: 'get',
+    params:data
+  })
+}
 export function cancel(studentId,topicId) {
   const data = {
     studentId,

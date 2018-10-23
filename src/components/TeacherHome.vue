@@ -14,10 +14,10 @@
     </el-header>
     <el-main>
       <el-row>
-        <el-button type="primary"  @click.native.prevent="dialogFormVisible = true">题目导入</el-button>
-        <el-button type="success">选题结果导出</el-button>
-        <el-button type="info">选题结果统计</el-button>
-        <el-button type="warning">学生名单导入</el-button>
+        <el-button type="primary"  @click.native.prevent="dialogFormVisible = true"  icon="el-icon-upload">题目导入</el-button>
+        <el-button type="success" icon="el-icon-download">选题结果导出</el-button>
+        <el-button type="info" icon="el-icon-download">选题结果统计</el-button>
+        <el-button type="warning" @click.native.prevent="stdDialogVisible = true" icon="el-icon-upload">学生名单导入</el-button>
       </el-row>
       <p class="table-title">
         题目列表
@@ -63,8 +63,8 @@
           label="操作"
           width="200">
           <template slot-scope="scope">
-            <el-button  @click="handleSelect(scope.row)" type="primary" size="small">编辑</el-button>
-            <el-button  @click="deleteDialog(scope.row)" type="danger" size="small">删除</el-button>
+            <el-button  icon="el-icon-edit" @click="handleEdit(scope.row)" type="primary" size="small">编辑</el-button>
+            <el-button  icon="el-icon-delete" @click="deleteDialog(scope.row)" type="danger" size="small">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -76,12 +76,36 @@
           <el-button type="primary" @click="uploadTopicFile">上传</el-button>
         </div>
       </el-dialog>
-      <el-dialog title="题目导入" :visible.sync="stdDialogVisible" width="40%">
+      <el-dialog title="学生名单导入" :visible.sync="stdDialogVisible" width="40%">
         <input type="file" value="" id="studentFile" @change="getStdFile($event)">
 
         <div slot="footer" class="dialog-footer">
           <el-button @click="stdDialogVisible = false">取 消</el-button>
           <el-button type="primary" @click="uploadTopicFile">上传</el-button>
+        </div>
+      </el-dialog>
+      <el-dialog title="编辑题目" :visible.sync="editDialogVisible">
+        <el-form :model="editForm">
+          <el-form-item label="序号" :label-width="formLabelWidth">
+            <el-input v-model="editForm.topicId" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="类型" :label-width="formLabelWidth">
+            <el-input v-model="editForm.topicType" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="题目" :label-width="formLabelWidth">
+            <el-input v-model="editForm.topicName" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="要求" :label-width="formLabelWidth">
+            <el-input type="textarea" v-model="editForm.topicDescription" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="限选人数" :label-width="formLabelWidth">
+            <el-input v-model="editForm.topicMaxSelected" autocomplete="off"></el-input>
+          </el-form-item>
+
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="editDialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="editDialogVisible = false">确 定</el-button>
         </div>
       </el-dialog>
     </el-main>
@@ -98,6 +122,8 @@
     data() {
       return {
         dialogFormVisible: false,
+        stdDialogVisible: false,
+        editDialogVisible: false,
         topicList: [],
         yourChoice:[],
         username: '',
@@ -115,7 +141,8 @@
           value: '3',
           label: '三班'
         }],
-        value: ''
+        value: '',
+        editForm : {}
       }
     },
     created() {
@@ -160,7 +187,7 @@
       },
       logout() {
         this.$store.commit(types.LOGOUT)
-        let redirect = decodeURIComponent('/login');
+        let redirect = decodeURIComponent('/teacherLogin');
         this.$router.push({
           path: redirect
         })
@@ -181,12 +208,12 @@
         console.error(this.topicFile)
       },
       uploadTopicFile() {
-
         uploadTopic(this.topicFile).then(response => {
           this.$message({
             message: response.data,
             type: 'success'
           });
+          this.dialogFormVisible = false
         })
       },
       getStdFile(e) {
@@ -200,6 +227,7 @@
             message: response.data,
             type: 'success'
           });
+          this.stdDialogVisible = false
         })
       },
 
@@ -230,6 +258,11 @@
             message: '已取消删除'
           });
         });
+      },
+      handleEdit(row){
+        this.editDialogVisible = true
+        this.editForm = row
+
       }
 
 

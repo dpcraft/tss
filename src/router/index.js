@@ -31,7 +31,7 @@ const routes = [
       path: '/',
       name: 'Home',
       meta: {
-        // requireAuth: true,  // 添加该字段，表示进入这个路由是需要登录的
+        requireAuth: true,  // 添加该字段，表示进入这个路由是需要登录的
       },
       component: Home
     },{
@@ -46,7 +46,7 @@ const routes = [
     path: '/TeacherHome',
     name: 'TeacherHome',
     meta: {
-      // requireAuth: true,  // 添加该字段，表示进入这个路由是需要登录的
+      requireTeacherAuth: true,  // 添加该字段，表示进入这个路由是需要登录的
     },
     component: TeacherHome
   }
@@ -75,6 +75,17 @@ router.beforeEach((to, from, next) => {
     else {
       next({
         path: '/login',
+        query: {redirect: to.fullPath}
+      })
+    }
+  }else if (to.matched.some(r => r.meta.requireTeacherAuth)) {
+    console.error('xxxx',store.state.token)
+    if (store.state.token) {
+      next();
+    }
+    else {
+      next({
+        path: '/teacherLogin',
         query: {redirect: to.fullPath}
       })
     }
