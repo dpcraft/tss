@@ -1,7 +1,7 @@
 import request from '@/utils/request'
 export function fetchList() {
   // const data = {
-  //   studentId:username,
+  //   studentId:studentName,
   //   studentPwd:password
   // }
   return request({

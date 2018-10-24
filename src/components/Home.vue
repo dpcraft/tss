@@ -1,16 +1,12 @@
 <template>
   <div>
     <el-header style="text-align: right; font-size: 18px">
-      <el-select v-model="classNo" placeholder="请选择班级" @change="changeClassNo">
-        <el-option
-          v-for="item in options"
-          :key="item.value"
-          :label="item.label"
-          :value="item.value">
-        </el-option>
-      </el-select>
-      欢迎 <span style="color: royalblue; margin-right: 10px">{{username}}</span>
+        欢迎:
+      <span style="color: deepskyblue; margin-right: 10px">{{classNo + '班 '}}</span>
+        <span style="color: royalblue; margin-right: 10px">{{studentName}}</span>
       <el-button @click="logout" type="danger" size="small">退出登录</el-button>
+      <!--<br/>-->
+      <!--<span style="color: royalblue; margin-right: 10px">{{username}}</span>-->
     </el-header>
     <el-main>
       <p class="table-title">
@@ -125,6 +121,7 @@
       return {
         topicList: [],
         yourChoice:[],
+        studentName: '',
         username: '',
         listLoading: false,
         listLoading2: false,
@@ -144,8 +141,11 @@
       }
     },
     created() {
-      this.username = this.$store.state.username
+      this.studentName = this.$store.state.studentName
       this.classNo = this.$store.state.classNo
+      this.username = this.$store.state.username
+      // console.error(this.studentName)
+      console.error('state', this.$store.state)
       this.getList()
       this.getyourChoiceList()
     },
@@ -221,14 +221,14 @@
       topicRealSelected() {
         return 'topicRealSelected' + this.classNo;
       },
-      changeClassNo() {
-        let data = {
-          username: window.localStorage.getItem('token'),
-          token: window.localStorage.getItem('username'),
-          classNo: this.classNo
-        }
-        this.$store.commit(types.LOGIN, data)
-      },
+      // changeClassNo() {
+      //   let data = {
+      //     username: window.localStorage.getItem('token'),
+      //     token: window.localStorage.getItem('username'),
+      //     classNo: this.classNo
+      //   }
+      //   this.$store.commit(types.LOGIN, data)
+      // },
       getType() {
         if(this.yourChoice.length == 0) {
           return 'primary'

@@ -1,21 +1,13 @@
 <template>
   <div>
     <el-header style="text-align: right; font-size: 18px">
-      <el-select v-model="classNo" placeholder="请选择班级" @change="changeClassNo">
-        <el-option
-          v-for="item in options"
-          :key="item.value"
-          :label="item.label"
-          :value="item.value">
-        </el-option>
-      </el-select>
-      欢迎 <span style="color: royalblue; margin-right: 10px">{{username}}</span>
+      欢迎 <span style="color: royalblue; margin-right: 10px">{{teacherName}}</span>
       <el-button @click="logout" type="danger" size="small">退出登录</el-button>
     </el-header>
     <el-main>
       <el-row>
         <el-button type="primary"  @click.native.prevent="dialogFormVisible = true"  icon="el-icon-upload">题目导入</el-button>
-        <el-button type="success" icon="el-icon-download">选题结果导出</el-button>
+        <el-button type="success" icon="el-icon-download" @click.native.prevent="resultDialogVisible = true">选题结果导出</el-button>
         <el-button type="info" icon="el-icon-download">选题结果统计</el-button>
         <el-button type="warning" @click.native.prevent="stdDialogVisible = true" icon="el-icon-upload">学生名单导入</el-button>
       </el-row>
@@ -81,7 +73,7 @@
 
         <div slot="footer" class="dialog-footer">
           <el-button @click="stdDialogVisible = false">取 消</el-button>
-          <el-button type="primary" @click="uploadTopicFile">上传</el-button>
+          <el-button type="primary" @click="uploadStdFile">上传</el-button>
         </div>
       </el-dialog>
       <el-dialog title="编辑题目" :visible.sync="editDialogVisible">
@@ -101,11 +93,22 @@
           <el-form-item label="限选人数" :label-width="formLabelWidth">
             <el-input v-model="editForm.topicMaxSelected" autocomplete="off"></el-input>
           </el-form-item>
-
         </el-form>
         <div slot="footer" class="dialog-footer">
           <el-button @click="editDialogVisible = false">取 消</el-button>
-          <el-button type="primary" @click="editDialogVisible = false">确 定</el-button>
+          <el-button type="primary" @click="handlePostEdit(editForm)">确 定</el-button>
+        </div>
+      </el-dialog>
+      <el-dialog title="选题结果导出" :visible.sync="resultDialogVisible">
+        <el-form :model="resultForm">
+          <el-form-item label="请输入班级编号（数字）" :label-width="formLabelWidth">
+            <el-input v-model="resultForm.classId" autocomplete="off"></el-input>
+          </el-form-item>
+
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="resultDialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="exportStatistics(resultForm.classId)">确 定</el-button>
         </div>
       </el-dialog>
     </el-main>
@@ -116,7 +119,7 @@
 
 <script>
   import * as types from '@/store/types'
-  import {fetchList, select, uploadTopic, deleteTopic,uploadStd} from '@/api/teacherTopic'
+  import {fetchList, select, uploadTopic, deleteTopic,uploadStd, getResult, updateTopic} from '@/api/teacherTopic'
   export default {
     name:'Home',
     data() {
@@ -124,30 +127,21 @@
         dialogFormVisible: false,
         stdDialogVisible: false,
         editDialogVisible: false,
+        resultDialogVisible: false,
         topicList: [],
         yourChoice:[],
-        username: '',
+        studentName: '',
         topicFile: '',
         stdFile: '',
         listLoading: false,
         classNo:'',
-        options: [{
-          value: '1',
-          label: '一班'
-        }, {
-          value: '2',
-          label: '二班'
-        }, {
-          value: '3',
-          label: '三班'
-        }],
         value: '',
-        editForm : {}
+        editForm : {},
+        resultForm: {}
       }
     },
     created() {
-      this.username = this.$store.state.username
-      this.classNo = this.$store.state.classNo
+      this.teacherName = this.$store.state.teacherName
       this.getList()
     },
     methods:{
@@ -161,30 +155,6 @@
         })
         this.listLoading = false
       },
-      handleSelect(row) {
-        select(this.username,row.topicId).then(response => {
-          this.$message({
-            message: response.data,
-            type: 'success'
-          });
-          if(response.code == 200){
-            this.yourChoice.push(row)
-          }
-        })
-
-      },
-      handleCancel(row) {
-        cancel(this.username,row.topicId).then(response => {
-          this.$message({
-            message: response.data,
-            type: 'success'
-          });
-          if(response.code == 200){
-            this.yourChoice.splice(0,1)
-          }
-        })
-
-      },
       logout() {
         this.$store.commit(types.LOGOUT)
         let redirect = decodeURIComponent('/teacherLogin');
@@ -192,27 +162,27 @@
           path: redirect
         })
       },
-      topicRealSelected() {
-        return 'topicRealSelected' + this.classNo;
-      },
-      changeClassNo() {
-        let data = {
-          username: window.localStorage.getItem('token'),
-          token: window.localStorage.getItem('username'),
-          classNo: this.classNo
-        }
-        this.$store.commit(types.LOGIN, data)
-      },
       getTopicFile(e) {
         this.topicFile = e.target.files[0];
         console.error(this.topicFile)
       },
       uploadTopicFile() {
         uploadTopic(this.topicFile).then(response => {
-          this.$message({
-            message: response.data,
-            type: 'success'
-          });
+          if(response.data.code == 200){
+            this.$message({
+              message: '上传成功',
+              type: 'success'
+
+            });
+            this.refresh()
+          }else {
+            this.$message({
+              message: '上传失败',
+              type: 'error'
+
+            });
+          }
+
           this.dialogFormVisible = false
         })
       },
@@ -220,13 +190,22 @@
         this.stdFile = e.target.files[0];
         console.error(this.stdFile)
       },
-      uploadTopicFile() {
-
+      uploadStdFile() {
         uploadStd(this.stdFile).then(response => {
-          this.$message({
-            message: response.data,
-            type: 'success'
-          });
+
+          if(response.data.code == 200){
+            this.$message({
+              message: '上传成功',
+              type: 'success'
+
+            });
+          }else {
+            this.$message({
+              message: '上传失败',
+              type: 'error'
+
+            });
+          }
           this.stdDialogVisible = false
         })
       },
@@ -261,9 +240,45 @@
       },
       handleEdit(row){
         this.editDialogVisible = true
-        this.editForm = row
+        this.editForm = Object.assign({}, row)
 
-      }
+      },
+      exportStatistics(classId){
+        getResult(classId).then(response => {
+          this.download(response.data, classId)
+          this.resultDialogVisible = false
+        })
+      },
+
+      download (data, classId) {
+        if (!data) {
+          return
+        }
+        let url = window.URL.createObjectURL(new Blob([data]))
+        let link = document.createElement('a')
+        link.style.display = 'none'
+        link.href = url
+        link.setAttribute('download',classId + '班选题结果.xls')
+        document.body.appendChild(link)
+        link.click()
+      },
+      handlePostEdit(form){
+        updateTopic(form).then(response => {
+          if(response.data.code == 200){
+            this.$message({
+              type: 'success',
+              message: '修改成功'
+            });
+            this.refresh()
+          }else {
+            this.$message({
+              type: 'error',
+              message: '修改失败'
+            });
+          }
+          this.editDialogVisible = false
+        })
+      },
 
 
     }

@@ -1,17 +1,17 @@
 <template>
   <div class="login-container">
-    <div class="title">通信网络系统基础选题</div>
+    <div class="title">通信网络系统基础选题系统</div>
     <el-row type="flex" class="row-bg">
       <el-col :span="8"></el-col>
       <el-col :span="6">
         <el-form  class="login-form" ref="loginForm" :model="loginForm" label-width="80px" :rules="loginRules" >
-        <el-form-item label="班级" prop="classNo">
-          <el-select v-model="loginForm.classNo" placeholder="请选择上课班级">
-            <el-option label="一班" value="1"></el-option>
-            <el-option label="二班" value="2"></el-option>
-            <el-option label="三班" value="3"></el-option>
-          </el-select>
-        </el-form-item>
+        <!--<el-form-item label="班级" prop="classNo">-->
+          <!--<el-select v-model="loginForm.classNo" placeholder="请选择上课班级">-->
+            <!--<el-option label="一班" value="1"></el-option>-->
+            <!--<el-option label="二班" value="2"></el-option>-->
+            <!--<el-option label="三班" value="3"></el-option>-->
+          <!--</el-select>-->
+        <!--</el-form-item>-->
         <el-form-item label="学号" prop="username">
           <el-input v-model="loginForm.username"
                     type="text"
@@ -95,7 +95,7 @@
         loginRules: {
           username: [{ required: true, trigger: 'blur', validator: validateUsername }],
           password: [{ required: true, trigger: 'blur', message: '密码不能为空' }],
-          classNo:[{required:true, trigger: 'blur', message: '请选择班级'}]
+          // classNo:[{required:true, trigger: 'blur', message: '请选择班级'}]
         },
         changePwdRules: {
           username: [{ required: true, trigger: 'blur', validator: validateUsername }],
@@ -145,17 +145,24 @@
           if (valid) {
             this.loading = true
             loginByUsername(this.loginForm.username,this.loginForm.password).then(response => {
-              if(response.data.code == 200 || response.data.code == 300){
+              if(response.data.code == 200){
                 let data = {
-                  username: this.loginForm.username,
-                  token: this.loginForm.username,
-                  classNo: this.loginForm.classNo
+                  username: response.data.studentId,
+                  token: response.data.studentId,
+                  classNo: response.data.classId,
+                  studentName: response.data.studentName
                 }
+                console.error('data',data)
                 this.$store.commit(types.LOGIN, data)
                 let redirect = decodeURIComponent(this.$route.query.redirect || '/');
+                console.error('stdredirect',redirect)
                 this.$router.push({
                   path: redirect
                 })
+              }else if(response.data.code == 300){
+                this.$alert('请修改密码', '登录失败', {
+                  confirmButtonText: '确定',
+                });
               }else if(response.data.code == 400) {
                 this.$alert('学号或密码不正确', '登录失败', {
                   confirmButtonText: '确定',

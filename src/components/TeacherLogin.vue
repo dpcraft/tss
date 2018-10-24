@@ -1,10 +1,11 @@
 <template>
   <div class="login-container">
-    <div class="title">通信网络系统基础选题(教师端)</div>
+    <div class="title">通信网络系统基础选题系统(教师端)</div>
     <el-row type="flex" class="row-bg">
       <el-col :span="8"></el-col>
       <el-col :span="6">
-        <el-form  class="login-form" ref="loginForm" :model="loginForm" label-width="80px" :rules="loginRules" >
+        <el-form  class="login-form" ref="loginForm" :model="loginForm" label-width="80px"  >
+          <!--:rules="loginRules"-->
         <el-form-item label="工号" prop="username">
           <el-input v-model="loginForm.username"
                     type="text"
@@ -33,7 +34,8 @@
     </el-row>
 
     <el-dialog title="修改密码" :visible.sync="dialogFormVisible" width="40%">
-      <el-form :model="changePwdForm" :rules="changePwdRules" ref="changePwdForm">
+      <!--:rules="changePwdRules"-->
+      <el-form :model="changePwdForm"  ref="changePwdForm">
         <el-form-item label="工号" :label-width="formLabelWidth" prop="username">
           <el-input v-model="changePwdForm.username" autocomplete="off" type="text"></el-input>
         </el-form-item>
@@ -58,7 +60,7 @@
 
 <script>
   import { isvalidUsername } from '@/utils/validate'
-  import {loginByUsername, changePwd} from '@/api/login'
+  import {loginByUsername, changePwd} from '@/api/teacherLogin'
   import * as types from '@/store/types'
   export default {
     name: 'Login',
@@ -137,17 +139,21 @@
           if (valid) {
             this.loading = true
             loginByUsername(this.loginForm.username,this.loginForm.password).then(response => {
-              if(response.data.code == 200 || response.data.code == 300){
+              if(response.data.code == 200){
                 let data = {
-                  username: this.loginForm.username,
-                  token: this.loginForm.username,
-                  classNo: this.loginForm.classNo
+                  teacherUsername: response.data.teacherId,
+                  teacherName: response.data.teacherName
                 }
-                this.$store.commit(types.LOGIN, data)
-                let redirect = decodeURIComponent(this.$route.query.redirect || '/');
+                this.$store.commit(types.TEACHERLOGIN, data)
+                let redirect = decodeURIComponent(this.$route.query.redirect || '/TeacherHome');
+                console.error('redirect',redirect)
                 this.$router.push({
                   path: redirect
                 })
+              }else if(response.data.code == 300){
+                this.$alert('请修改密码', '登录失败', {
+                  confirmButtonText: '确定',
+                });
               }else if(response.data.code == 400) {
                 this.$alert('工号或密码不正确', '登录失败', {
                   confirmButtonText: '确定',

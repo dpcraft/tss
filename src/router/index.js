@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import Home from '@/components/Home'
 import TeacherHome from '@/components/TeacherHome'
 import Login from '@/components/Login'
+import AllPage from '@/components/AllPage'
 import TeacherLogin from '@/components/TeacherLogin'
 import store from '@/store/store'
 import * as types from '@/store/types'
@@ -54,12 +55,21 @@ const routes = [
   ];
 if (window.localStorage.getItem('token')) {
   let data = {
-    username: window.localStorage.getItem('token'),
-    token: window.localStorage.getItem('username'),
+    token: window.localStorage.getItem('token'),
+    username: window.localStorage.getItem('username'),
     classNo: window.localStorage.getItem('classNo'),
+    studentName: window.localStorage.getItem('studentName'),
 
   }
   store.commit(types.LOGIN, data)
+}
+if (window.localStorage.getItem('teacherUsername')) {
+  let data = {
+    teacherUsername: window.localStorage.getItem('teacherUsername'),
+    teacherName: window.localStorage.getItem('teacherName'),
+
+  }
+  store.commit(types.TEACHERLOGIN, data)
 }
 
 const router = new Router({
@@ -68,24 +78,22 @@ const router = new Router({
 
 router.beforeEach((to, from, next) => {
   if (to.matched.some(r => r.meta.requireAuth)) {
-    console.error('xxxx',store.state.token)
     if (store.state.token) {
       next();
     }
     else {
       next({
-        path: '/login',
+        path: '/Login',
         query: {redirect: to.fullPath}
       })
     }
   }else if (to.matched.some(r => r.meta.requireTeacherAuth)) {
-    console.error('xxxx',store.state.token)
-    if (store.state.token) {
+    if (store.state.teacherUsername) {
       next();
     }
     else {
       next({
-        path: '/teacherLogin',
+        path: '/TeacherLogin',
         query: {redirect: to.fullPath}
       })
     }

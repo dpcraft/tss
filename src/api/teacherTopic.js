@@ -1,7 +1,7 @@
 import request from '@/utils/request'
 export function fetchList() {
   // const data = {
-  //   studentId:username,
+  //   studentId:studentName,
   //   studentPwd:password
   // }
   return request({
@@ -51,5 +51,24 @@ export function deleteTopic(topicId) {
     url: '/topic/delete/topic',
     method: 'get',
     params:data
+  })
+}
+export function getResult(classId) {
+  const data = {
+    classId
+  }
+  return request({
+    url: '/excel/export/students',
+    method: 'get',
+    params:data,
+    responseType: 'blob',
+  })
+}
+export function updateTopic(topic) {
+  return request({
+    url: '/topic/update/data',
+    method: 'post',
+    data: topic
+
   })
 }
