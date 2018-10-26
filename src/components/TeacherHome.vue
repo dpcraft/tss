@@ -11,6 +11,7 @@
         <el-button type="success" icon="el-icon-download" @click.native.prevent="resultDialogVisible = true">选题结果导出</el-button>
         <el-button type="info" icon="el-icon-download">选题结果统计</el-button>
         <el-button type="warning" @click.native.prevent="stdDialogVisible = true" icon="el-icon-upload">学生名单导入</el-button>
+        <el-button type="danger" @click.native.prevent="resetDialogVisible = true" icon="el-icon-refresh">重置学生密码</el-button>
       </el-row>
       <p class="table-title">
         题目列表
@@ -91,7 +92,7 @@
         </div>
       </el-dialog>
       <el-dialog title="编辑题目" :visible.sync="editDialogVisible">
-        <el-form :model="editForm">
+        <el-form :model="editForm" >
           <el-form-item label="序号" :label-width="formLabelWidth">
             <el-input v-model="editForm.topicId" autocomplete="off"></el-input>
           </el-form-item>
@@ -101,8 +102,8 @@
           <el-form-item label="题目" :label-width="formLabelWidth">
             <el-input v-model="editForm.topicName" autocomplete="off"></el-input>
           </el-form-item>
-          <el-form-item label="要求" :label-width="formLabelWidth">
-            <el-input type="textarea" v-model="editForm.topicDescription" autocomplete="off"></el-input>
+          <el-form-item label="要求" :label-width="formLabelWidth" >
+            <el-input :disabled="validateURL(editForm.topicDescription)" type="textarea" v-model="editForm.topicDescription" autocomplete="off"></el-input>
           </el-form-item>
           <el-form-item label="限选人数" :label-width="formLabelWidth">
             <el-input v-model="editForm.topicMaxSelected" autocomplete="off"></el-input>
@@ -125,6 +126,17 @@
           <el-button type="primary" @click="exportStatistics(resultForm.classId)">确 定</el-button>
         </div>
       </el-dialog>
+      <el-dialog title="重置学生密码" :visible.sync="resetDialogVisible" width="40%">
+        <el-form :model="resetPwdForm" :rules="resetPwdRules" ref="resetPwdForm">
+          <el-form-item label="学号" :label-width="formLabelWidth" prop="username">
+            <el-input v-model="resetPwdForm.username" autocomplete="off" type="text"></el-input>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="resetDialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="handleResetPwd">确 定</el-button>
+        </div>
+      </el-dialog>
     </el-main>
 
 
@@ -133,15 +145,25 @@
 
 <script>
   import * as types from '@/store/types'
+  import {changePwd} from '@/api/login'
+  import { isvalidUsername } from '@/utils/validate'
   import {fetchList, select, uploadTopic,uploadTopicWord, deleteTopic,uploadStd, getResult, updateTopic} from '@/api/teacherTopic'
   export default {
-    name:'Home',
+    name:'teacherHome',
     data() {
+      const validateUsername = (rule, value, callback) => {
+        if (!isvalidUsername(value)) {
+          callback(new Error('请输入正确的学号'))
+        } else {
+          callback()
+        }
+      }
       return {
         dialogFormVisible: false,
         stdDialogVisible: false,
         editDialogVisible: false,
         resultDialogVisible: false,
+        resetDialogVisible: false,
         wordDialogVisible: false,
         topicList: [],
         yourChoice:[],
@@ -152,7 +174,16 @@
         classNo:'',
         value: '',
         editForm : {},
-        resultForm: {}
+        resultForm: {},
+        resetPwdRules: {
+          username: [{ required: true, trigger: 'blur', validator: validateUsername }],
+        },
+        resetPwdForm: {
+          username:'',
+          newPwd: '666666'
+
+        },
+        formLabelWidth: '100px'
       }
     },
     created() {
@@ -179,7 +210,6 @@
       },
       getTopicFile(e) {
         this.topicFile = e.target.files[0];
-        console.error(this.topicFile)
       },
       uploadTopicFile() {
         uploadTopic(this.topicFile).then(response => {
@@ -203,7 +233,6 @@
       },
       getTopicWordFile(e) {
         this.topicFile = e.target.files[0];
-        console.error(this.topicFile)
       },
       uploadTopicWordFile() {
         uploadTopicWord(this.topicFile).then(response => {
@@ -326,6 +355,28 @@
       validateURL(textval) {
         const urlregex = /^(https?|ftp):\/\/([a-zA-Z0-9.-]+(:[a-zA-Z0-9.&%$-]+)*@)*((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}|([a-zA-Z0-9-]+\.)*[a-zA-Z0-9-]+\.(com|edu|gov|int|mil|net|org|biz|arpa|info|name|pro|aero|coop|museum|[a-zA-Z]{2}))(:[0-9]+)*(\/($|[a-zA-Z0-9.,?'\\+&%$#=~_-]+))*$/
         return urlregex.test(textval)
+      },
+      handleResetPwd() {
+        this.$refs.resetPwdForm.validate(valid => {
+          if (valid) {
+            changePwd(this.resetPwdForm.username, this.resetPwdForm.newPwd).then(response => {
+              if(response.data.code == 200 || response.data.code == 300){
+                this.$alert('', '重置密码成功', {
+                  confirmButtonText: '确定',
+                });
+              }else if(response.data.code == 400) {
+                this.$alert('请重新操作', '重置密码失败', {
+                  confirmButtonText: '确定',
+                });
+              }
+
+            })
+            this.resetDialogVisible = false
+          } else {
+            console.log('error submit!!')
+            return false
+          }
+        })
       }
 
 

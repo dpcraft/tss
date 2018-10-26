@@ -5,13 +5,6 @@
       <el-col :span="8"></el-col>
       <el-col :span="6">
         <el-form  class="login-form" ref="loginForm" :model="loginForm" label-width="80px" :rules="loginRules" size="medium">
-        <!--<el-form-item label="班级" prop="classNo">-->
-          <!--<el-select v-model="loginForm.classNo" placeholder="请选择上课班级">-->
-            <!--<el-option label="一班" value="1"></el-option>-->
-            <!--<el-option label="二班" value="2"></el-option>-->
-            <!--<el-option label="三班" value="3"></el-option>-->
-          <!--</el-select>-->
-        <!--</el-form-item>-->
         <el-form-item label="学号" prop="username">
           <el-input v-model="loginForm.username"
                     type="text"
@@ -21,15 +14,16 @@
           <el-input v-model="loginForm.password"
                     :type="passwordType"
                     auto-complete="on"
-                    @keyup.enter.native="handleLogin"/>
+                    @keyup.enter.native="handleLogin">
+            <i slot="suffix" title="显示密码" @click="showPwd" style="cursor:pointer;"
+               class="el-icon-view"></i>
+          </el-input>
         </el-form-item>
-        <!--<span class="show-pwd" @click="showPwd">-->
-          <!--<svg-icon icon-class="eye" />-->
-        <!--</span>-->
+
 
           <el-col :span="6"/>
             <el-col :span="12">
-            <el-button  type="info" style="margin-bottom:30px;" @click.native.prevent="dialogFormVisible = true">修改密码</el-button>
+            <el-button  type="info" style="margin-bottom:30px;" @click="handleForgetPwd">忘记密码</el-button>
           </el-col>
           <el-col :span="12">
             <el-button :loading="loading" type="primary" style="margin-bottom:30px;" @click.native.prevent="handleLogin">登录</el-button>
@@ -40,18 +34,18 @@
     </el-row>
 
     <el-dialog title="修改密码" :visible.sync="dialogFormVisible" width="40%">
+      <div style="color: deepskyblue; margin-bottom: 10px">目前系统处在测试阶段，请不要使用自己的常用密码（尤其是支付相关密码）</div>
       <el-form :model="changePwdForm" :rules="changePwdRules" ref="changePwdForm">
         <el-form-item label="学号" :label-width="formLabelWidth" prop="username">
           <el-input v-model="changePwdForm.username" autocomplete="off" type="text"></el-input>
         </el-form-item>
-        <el-form-item label="原密码" :label-width="formLabelWidth"prop="oldPwd">
-          <el-input v-model="changePwdForm.oldPwd" autocomplete="off" :type="passwordType"></el-input>
-        </el-form-item>
         <el-form-item label="新密码" :label-width="formLabelWidth" prop="newPwd">
-          <el-input v-model="changePwdForm.newPwd" autocomplete="off" :type="passwordType"></el-input>
+          <el-input v-model="changePwdForm.newPwd" autocomplete="off" :type="passwordType2"><i slot="suffix" title="显示密码" @click="showPwd2" style="cursor:pointer;"
+                                                                                               class="el-icon-view"></i></el-input>
         </el-form-item>
         <el-form-item label="确认新密码" :label-width="formLabelWidth" prop="reNewPwd">
-          <el-input v-model="changePwdForm.reNewPwd" autocomplete="off" :type="passwordType"></el-input>
+          <el-input v-model="changePwdForm.reNewPwd" autocomplete="off" :type="passwordType2"><i slot="suffix" title="显示密码" @click="showPwd2" style="cursor:pointer;"
+                                                                                                 class="el-icon-view"></i></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -99,11 +93,11 @@
         },
         changePwdRules: {
           username: [{ required: true, trigger: 'blur', validator: validateUsername }],
-          oldPwd: [{ required: true, trigger: 'blur', message: '原密码不能为空' }],
           newPwd:[{required:true, trigger: 'blur', message: '新密码不能为空'}],
           reNewPwd:[{required:true, trigger: 'blur', validator: validateRePwd }]
         },
         passwordType: 'password',
+        passwordType2: 'password',
         loading: false,
         dialogFormVisible: false,
         redirect: undefined,
@@ -140,6 +134,13 @@
           this.passwordType = 'password'
         }
       },
+      showPwd2() {
+        if (this.passwordType2 === 'password') {
+          this.passwordType2 = ''
+        } else {
+          this.passwordType2 = 'password'
+        }
+      },
       handleLogin() {
         this.$refs.loginForm.validate(valid => {
           if (valid) {
@@ -152,17 +153,17 @@
                   classNo: response.data.classId,
                   studentName: response.data.studentName
                 }
-                console.error('data',data)
                 this.$store.commit(types.LOGIN, data)
                 let redirect = decodeURIComponent(this.$route.query.redirect || '/');
-                console.error('stdredirect',redirect)
                 this.$router.push({
                   path: redirect
                 })
               }else if(response.data.code == 300){
-                this.$alert('请修改密码', '登录失败', {
-                  confirmButtonText: '确定',
-                });
+                this.dialogFormVisible = true
+                this.changePwdForm.username = this.loginForm.username
+                // this.$alert('请修改密码', '登录失败', {
+                //   confirmButtonText: '确定',
+                // });
               }else if(response.data.code == 400) {
                 this.$alert('学号或密码不正确', '登录失败', {
                   confirmButtonText: '确定',
@@ -176,6 +177,11 @@
             return false
           }
         })
+      },
+      handleForgetPwd(){
+        this.$alert('请联系老师进行密码修改', '忘记密码', {
+          confirmButtonText: '确定',
+        });
       },
       handleChangePwd() {
         this.$refs.changePwdForm.validate(valid => {

@@ -15,7 +15,6 @@ export default new Vuex.Store({
     },
     mutations: {
         [types.LOGIN]: (state, data) => {
-          console.error('store data',data)
             localStorage.token = data.token;
             localStorage.studentName= data.studentName;
             localStorage.classNo= data.classNo;
@@ -26,7 +25,6 @@ export default new Vuex.Store({
             state.username = data.username;
         },
       [types.TEACHERLOGIN]: (state, data) => {
-        console.error('store data',data)
 
         localStorage.teacherName= data.teacherName;
         localStorage.teacherUsername= data.teacherUsername;

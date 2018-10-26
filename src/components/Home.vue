@@ -151,8 +151,6 @@
       this.studentName = this.$store.state.studentName
       this.classNo = this.$store.state.classNo
       this.username = this.$store.state.username
-      // console.error(this.studentName)
-      console.error('state', this.$store.state)
       this.getList()
       this.getyourChoiceList()
     },

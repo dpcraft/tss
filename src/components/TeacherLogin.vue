@@ -15,7 +15,10 @@
           <el-input v-model="loginForm.password"
                     :type="passwordType"
                     auto-complete="on"
-                    @keyup.enter.native="handleLogin"/>
+                    @keyup.enter.native="handleLogin">
+            <i slot="suffix" title="显示密码" @click="showPwd" style="cursor:pointer;"
+               class="el-icon-view"></i>
+          </el-input>
         </el-form-item>
         <!--<span class="show-pwd" @click="showPwd">-->
           <!--<svg-icon icon-class="eye" />-->
@@ -146,7 +149,6 @@
                 }
                 this.$store.commit(types.TEACHERLOGIN, data)
                 let redirect = decodeURIComponent(this.$route.query.redirect || '/TeacherHome');
-                console.error('redirect',redirect)
                 this.$router.push({
                   path: redirect
                 })
