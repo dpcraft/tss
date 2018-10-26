@@ -1,5 +1,5 @@
 import axios from 'axios'
-// import { Message } from 'element-ui'
+import { Message } from 'element-ui'
 import store from '@/store/store'
 import * as types from '@/store/types'
 import router from '@/router'
@@ -32,6 +32,11 @@ service.interceptors.response.use(
     return response
   },
   error => {
+    Message({
+      message: '网络错误：' + error.message,
+      type: 'error',
+      duration: 5 * 1000
+    })
     if (error.response) {
       switch (error.response.status) {
         case 401:

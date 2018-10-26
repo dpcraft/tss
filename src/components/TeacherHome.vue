@@ -6,7 +6,8 @@
     </el-header>
     <el-main>
       <el-row>
-        <el-button type="primary"  @click.native.prevent="dialogFormVisible = true"  icon="el-icon-upload">题目导入</el-button>
+        <el-button type="primary"  @click.native.prevent="dialogFormVisible = true"  icon="el-icon-upload">excel题目导入</el-button>
+        <el-button type="primary"  @click.native.prevent="wordDialogVisible = true"  icon="el-icon-upload">word题目导入</el-button>
         <el-button type="success" icon="el-icon-download" @click.native.prevent="resultDialogVisible = true">选题结果导出</el-button>
         <el-button type="info" icon="el-icon-download">选题结果统计</el-button>
         <el-button type="warning" @click.native.prevent="stdDialogVisible = true" icon="el-icon-upload">学生名单导入</el-button>
@@ -18,7 +19,7 @@
         :data="topicList"
         stripe
         v-loading="listLoading"
-        style="width: 100%; text-align: center">
+        style="width: 100%;">
         <el-table-column
           label="序号"
           align="center"
@@ -32,16 +33,19 @@
           width="180">
         </el-table-column>
         <el-table-column
-          align="center"
+          header-align="center"
           prop="topicName"
           label="题目"
           width="300">
         </el-table-column>
         <el-table-column
-          align="center"
-          prop="topicDescription"
+          header-align="center"
           label="要求"
           min-width="300">
+          <template slot-scope="scope">
+            <a v-if="validateURL(scope.row.topicDescription)" :href="scope.row.topicDescription" :download="scope.row.topicName">下载具体要求</a>
+            <span v-if="!validateURL(scope.row.topicDescription)">{{scope.row.topicDescription}}</span>
+          </template>
         </el-table-column>
         <el-table-column
           align="center"
@@ -60,12 +64,22 @@
           </template>
         </el-table-column>
       </el-table>
-      <el-dialog title="题目导入" :visible.sync="dialogFormVisible" width="40%">
+      <el-dialog title="excel题目导入" :visible.sync="dialogFormVisible" width="40%">
         <input type="file" value="" id="topicFile" @change="getTopicFile($event)">
 
         <div slot="footer" class="dialog-footer">
           <el-button @click="dialogFormVisible = false">取 消</el-button>
           <el-button type="primary" @click="uploadTopicFile">上传</el-button>
+        </div>
+      </el-dialog>
+
+      <el-dialog title="word 题目导入" :visible.sync="wordDialogVisible" width="40%">
+        <div style="color: deepskyblue">文件命名为：题号_类型_名称_限选人数,例：5_设计与配置_路由器设计_10</div>
+        <input type="file" value="" id="topicWordFile" @change="getTopicWordFile($event)">
+
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="wordDialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="uploadTopicWordFile">上传</el-button>
         </div>
       </el-dialog>
       <el-dialog title="学生名单导入" :visible.sync="stdDialogVisible" width="40%">
@@ -119,7 +133,7 @@
 
 <script>
   import * as types from '@/store/types'
-  import {fetchList, select, uploadTopic, deleteTopic,uploadStd, getResult, updateTopic} from '@/api/teacherTopic'
+  import {fetchList, select, uploadTopic,uploadTopicWord, deleteTopic,uploadStd, getResult, updateTopic} from '@/api/teacherTopic'
   export default {
     name:'Home',
     data() {
@@ -128,6 +142,7 @@
         stdDialogVisible: false,
         editDialogVisible: false,
         resultDialogVisible: false,
+        wordDialogVisible: false,
         topicList: [],
         yourChoice:[],
         studentName: '',
@@ -186,9 +201,38 @@
           this.dialogFormVisible = false
         })
       },
+      getTopicWordFile(e) {
+        this.topicFile = e.target.files[0];
+        console.error(this.topicFile)
+      },
+      uploadTopicWordFile() {
+        uploadTopicWord(this.topicFile).then(response => {
+          if(response.data.code == 200){
+            this.$message({
+              message: '上传成功',
+              type: 'success'
+
+            });
+            this.refresh()
+          }else if(response.data.code == 401){
+            this.$message({
+              message: '文件名不符合规范',
+              type: 'error'
+
+            });
+          }else{
+            this.$message({
+              message: '上传失败',
+              type: 'error'
+
+            });
+          }
+
+          this.wordDialogVisible = false
+        })
+      },
       getStdFile(e) {
         this.stdFile = e.target.files[0];
-        console.error(this.stdFile)
       },
       uploadStdFile() {
         uploadStd(this.stdFile).then(response => {
@@ -279,6 +323,10 @@
           this.editDialogVisible = false
         })
       },
+      validateURL(textval) {
+        const urlregex = /^(https?|ftp):\/\/([a-zA-Z0-9.-]+(:[a-zA-Z0-9.&%$-]+)*@)*((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}|([a-zA-Z0-9-]+\.)*[a-zA-Z0-9-]+\.(com|edu|gov|int|mil|net|org|biz|arpa|info|name|pro|aero|coop|museum|[a-zA-Z]{2}))(:[0-9]+)*(\/($|[a-zA-Z0-9.,?'\\+&%$#=~_-]+))*$/
+        return urlregex.test(textval)
+      }
 
 
     }

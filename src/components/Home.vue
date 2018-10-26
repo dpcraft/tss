@@ -16,7 +16,7 @@
         :data="topicList"
         stripe
         v-loading="listLoading"
-        style="width: 100%; text-align: center">
+        style="width: 100%;">
         <el-table-column
           label="序号"
           align="center"
@@ -30,16 +30,19 @@
           width="180">
         </el-table-column>
         <el-table-column
-          align="center"
+          header-align="center"
           prop="topicName"
           label="题目"
           width="300">
         </el-table-column>
         <el-table-column
-          align="center"
-          prop="topicDescription"
+          header-align="center"
           label="要求"
           min-width="300">
+          <template slot-scope="scope">
+            <a v-if="validateURL(scope.row.topicDescription)" :href="scope.row.topicDescription" :download="scope.row.topicName">下载具体要求</a>
+            <span v-if="!validateURL(scope.row.topicDescription)">{{scope.row.topicDescription}}</span>
+          </template>
         </el-table-column>
         <el-table-column
           align="center"
@@ -72,10 +75,10 @@
         :data="yourChoice"
         v-loading="listLoading2"
         stripe
-        style="width: 100%; text-align: center">
+        header-align="center"
+        style="width: 100%;">
         <el-table-column
           label="序号"
-          align="center"
           prop="topicId"
           width="80">
         </el-table-column>
@@ -92,10 +95,13 @@
           width="300">
         </el-table-column>
         <el-table-column
-          align="center"
-          prop="topicDescription"
+          header-align="center"
           label="要求"
           min-width="300">
+          <template slot-scope="scope">
+            <a v-if="validateURL(scope.row.topicDescription)" :href="scope.row.topicDescription" :download="scope.row.topicName">下载具体要求</a>
+            <span v-if="!validateURL(scope.row.topicDescription)">{{scope.row.topicDescription}}</span>
+          </template>
         </el-table-column>
         <el-table-column
           align="center"
@@ -115,6 +121,7 @@
 <script>
   import * as types from '@/store/types'
   import {fetchList, select, cancel, fetchList2} from '@/api/topic'
+  // import { validateURL } from '@/utils/validate'
   export default {
     name:'Home',
     data() {
@@ -221,6 +228,7 @@
       topicRealSelected() {
         return 'topicRealSelected' + this.classNo;
       },
+
       // changeClassNo() {
       //   let data = {
       //     username: window.localStorage.getItem('token'),
@@ -235,6 +243,10 @@
         }else {
           return 'info'
         }
+      },
+      validateURL(textval) {
+        const urlregex = /^(https?|ftp):\/\/([a-zA-Z0-9.-]+(:[a-zA-Z0-9.&%$-]+)*@)*((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}|([a-zA-Z0-9-]+\.)*[a-zA-Z0-9-]+\.(com|edu|gov|int|mil|net|org|biz|arpa|info|name|pro|aero|coop|museum|[a-zA-Z]{2}))(:[0-9]+)*(\/($|[a-zA-Z0-9.,?'\\+&%$#=~_-]+))*$/
+        return urlregex.test(textval)
       }
     }
   }

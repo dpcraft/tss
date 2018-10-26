@@ -4,7 +4,7 @@
     <el-row type="flex" class="row-bg">
       <el-col :span="8"></el-col>
       <el-col :span="6">
-        <el-form  class="login-form" ref="loginForm" :model="loginForm" label-width="80px" :rules="loginRules" >
+        <el-form  class="login-form" ref="loginForm" :model="loginForm" label-width="80px" :rules="loginRules" size="medium">
         <!--<el-form-item label="班级" prop="classNo">-->
           <!--<el-select v-model="loginForm.classNo" placeholder="请选择上课班级">-->
             <!--<el-option label="一班" value="1"></el-option>-->

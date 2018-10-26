@@ -20,6 +20,17 @@ export function uploadTopic(file) {
 
   })
 }
+export function uploadTopicWord(file) {
+  let formdata = new FormData();
+  formdata.append('file',file);
+  return request({
+    url: '/excel/import/osstopics',
+    method: "POST",　　　　//  这个地方注意
+    data:formdata
+
+
+  })
+}
 export function uploadStd(file) {
   let formdata = new FormData();
   formdata.append('file',file);
