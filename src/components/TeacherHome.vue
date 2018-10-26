@@ -116,7 +116,7 @@
       </el-dialog>
       <el-dialog title="选题结果导出" :visible.sync="resultDialogVisible">
         <el-form :model="resultForm">
-          <el-form-item label="请输入班级编号（数字）" :label-width="formLabelWidth">
+          <el-form-item label="请输入班级编号（数字）" >
             <el-input v-model="resultForm.classId" autocomplete="off"></el-input>
           </el-form-item>
 
@@ -220,7 +220,13 @@
 
             });
             this.refresh()
-          }else {
+          }else if(response.data.code == 402){
+            this.$message({
+              message: '您没有权限进行该项操作',
+              type: 'error'
+
+            });}
+            else {
             this.$message({
               message: '上传失败',
               type: 'error'
@@ -249,6 +255,12 @@
               type: 'error'
 
             });
+          }else if(response.data.code == 402){
+            this.$message({
+              message: '您没有权限进行该项操作',
+              type: 'error'
+
+            });
           }else{
             this.$message({
               message: '上传失败',
@@ -270,6 +282,12 @@
             this.$message({
               message: '上传成功',
               type: 'success'
+
+            });
+          }else if(response.data.code == 402){
+            this.$message({
+              message: '您没有权限进行该项操作',
+              type: 'error'
 
             });
           }else {
