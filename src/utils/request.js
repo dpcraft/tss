@@ -33,7 +33,7 @@ service.interceptors.response.use(
   },
   error => {
     Message({
-      message: '网络错误：' + error.message,
+      message: '网络错误：后台可能崩了，建议把后台祭天 ！',
       type: 'error',
       duration: 5 * 1000
     })

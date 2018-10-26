@@ -37,7 +37,7 @@
       <div style="color: deepskyblue; margin-bottom: 10px">目前系统处在测试阶段，请不要使用自己的常用密码（尤其是支付相关密码）</div>
       <el-form :model="changePwdForm" :rules="changePwdRules" ref="changePwdForm">
         <el-form-item label="学号" :label-width="formLabelWidth" prop="username">
-          <el-input v-model="changePwdForm.username" autocomplete="off" type="text"></el-input>
+          <el-input v-model="changePwdForm.username" autocomplete="off" type="text" disabled="true"></el-input>
         </el-form-item>
         <el-form-item label="新密码" :label-width="formLabelWidth" prop="newPwd">
           <el-input v-model="changePwdForm.newPwd" autocomplete="off" :type="passwordType2"><i slot="suffix" title="显示密码" @click="showPwd2" style="cursor:pointer;"
