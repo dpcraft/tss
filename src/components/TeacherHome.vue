@@ -115,12 +115,14 @@
         </div>
       </el-dialog>
       <el-dialog title="选题结果导出" :visible.sync="resultDialogVisible">
-        <el-form :model="resultForm">
-          <el-form-item label="请输入班级编号（数字）" >
-            <el-input v-model="resultForm.classId" autocomplete="off"></el-input>
-          </el-form-item>
-
-        </el-form>
+        <el-select v-model="resultForm.classId" placeholder="请选择班级">
+          <el-option
+            v-for="item in options"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value">
+          </el-option>
+        </el-select>
         <div slot="footer" class="dialog-footer">
           <el-button @click="resultDialogVisible = false">取 消</el-button>
           <el-button type="primary" @click="exportStatistics(resultForm.classId)">确 定</el-button>
@@ -172,7 +174,19 @@
         stdFile: '',
         listLoading: false,
         classNo:'',
-        value: '',
+        options: [{
+          value: '1',
+          label: '一班'
+        }, {
+          value: '2',
+          label: '二班'
+        }, {
+          value: '3',
+          label: '三班'
+        }, {
+          value: '-1',
+          label: '全部班级'
+        }],
         editForm : {},
         resultForm: {},
         resetPwdRules: {
@@ -349,7 +363,11 @@
         let link = document.createElement('a')
         link.style.display = 'none'
         link.href = url
-        link.setAttribute('download',classId + '班选题结果.xls')
+        if(classId == -1){
+          link.setAttribute('download', '全部班级选题结果.xls')
+        }else{
+          link.setAttribute('download',classId + '班选题结果.xls')
+        }
         document.body.appendChild(link)
         link.click()
       },
